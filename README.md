@@ -1,3 +1,3 @@
 # htom [DevOps Lab]
 
-A simple API to convert HTML to Markdown.
+A simple API to convert HTML to Markdown
