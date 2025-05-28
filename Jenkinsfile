@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SONAR_TOKEN = credentials('jenkins-integration')
+        NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
     }
 
@@ -56,6 +57,7 @@ pipeline {
                     --prettyPrint
                     --enableRetired
                     --enableExperimental
+                    --nvdApiKey ${NVD_API_KEY}
                 ''', odcInstallation: 'OWASP-DepCheck'
 
                 dependencyCheckPublisher pattern: 'dependency-check-report.xml'

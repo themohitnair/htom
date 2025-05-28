@@ -2,3 +2,4 @@ __pycache__
 .venv
 .ropeproject
 *.log
+.env
