@@ -8,7 +8,6 @@ from starlette.exceptions import HTTPException
 from modules.convert import html_to_markdown
 from modules.models import HealthCheck, HTMLRequest, MarkdownResponse
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -23,10 +22,8 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup logic
     logger.info("FastAPI application starting up")
     yield
-    # Shutdown logic
     logger.info("FastAPI application shutting down")
 
 
@@ -46,7 +43,6 @@ async def log_requests(request: Request, call_next):
 
     process_time = time.time() - start_time
 
-    # Log response details
     logger.info(
         f"Request completed: {request.method} {request.url.path} - "
         f"Status: {response.status_code} - Time: {process_time:.3f}s"
