@@ -50,19 +50,22 @@ pipeline {
 
         stage('OWASP Dependency Check') {
             steps {
-                dependencyCheck additionalArguments: '''
-                    --scan ./
-                    --out ./
-                    --format ALL
-                    --prettyPrint
-                    --enableRetired
-                    --enableExperimental
-                    --nvdApiKey ${NVD_API_KEY}
-                ''', odcInstallation: 'OWASP-DepCheck'
+              dependencyCheck additionalArguments: '''
+                  --scan ./
+                  --out ./
+                  --format ALL
+                  --prettyPrint
+                  --enableRetired
+                  --enableExperimental
+                  --data /var/lib/jenkins/dependency-check-data
+              ''',
+              odcInstallation: 'OWASP-DepCheck',
+              nvdCredentialsId: 'nvd-api-key'
 
-                dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+              dependencyCheckPublisher pattern: 'dependency-check-report.xml'
             }
         }
+
 
         stage('SonarQube Analysis') {
             steps {
