@@ -91,7 +91,7 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
+                timeout(time: 15, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: false
                 }
             }
@@ -101,13 +101,6 @@ pipeline {
     post {
         always {
             echo 'Pipeline completed'
-
-            // Archive test results if they exist
-            script {
-                if (fileExists('coverage.xml')) {
-                    publishCoverage adapters: [coberturaAdapter('coverage.xml')], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
-                }
-            }
 
             // Publish OWASP report
             publishHTML([
