@@ -1,12 +1,15 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
 
 
 class HTMLRequest(BaseModel):
-    html: str | None
+    model_config = ConfigDict(extra="forbid")
+    html: Optional[str] = None
 
 
 class MarkdownResponse(BaseModel):
-    markdown: str | None
+    markdown: Optional[str] = None
     success: str
 
 
