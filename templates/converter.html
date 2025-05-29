@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML to Markdown Converter</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="theme-toggle">
+      <button id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+
+    <div class="container">
+      <header class="header">
+        <h1><i class="fas fa-code"></i> HTML to Markdown Converter</h1>
+        <p class="subtitle">
+          Transform your HTML into clean, readable Markdown instantly
+        </p>
+      </header>
+
+      <div class="converter-wrapper">
+        <div class="converter-section">
+          <div class="input-panel">
+            <div class="panel-header">
+              <h3><i class="fab fa-html5"></i> HTML Input</h3>
+              <div class="panel-actions">
+                <button
+                  id="pasteBtn"
+                  class="action-btn"
+                  title="Paste from clipboard"
+                >
+                  <i class="fas fa-paste"></i>
+                </button>
+              </div>
+            </div>
+            <div class="input-container">
+              <textarea
+                id="htmlInput"
+                placeholder="Enter HTML here..."
+                rows="15"
+              ></textarea>
+              <div class="char-count">
+                <span id="charCount">0</span> characters
+              </div>
+            </div>
+          </div>
+
+          <div class="output-panel">
+            <div class="panel-header">
+              <h3><i class="fab fa-markdown"></i> Markdown Output</h3>
+              <div class="panel-actions">
+                <button
+                  id="copyBtn"
+                  class="action-btn"
+                  title="Copy to clipboard"
+                >
+                  <i class="fas fa-copy"></i>
+                </button>
+                <button
+                  id="downloadBtn"
+                  class="action-btn"
+                  title="Download as .md file"
+                >
+                  <i class="fas fa-download"></i>
+                </button>
+              </div>
+            </div>
+            <div class="output-container">
+              <textarea
+                id="markdownOutput"
+                readonly
+                placeholder="Your converted Markdown will appear here..."
+                rows="15"
+              ></textarea>
+              <div class="word-count"><span id="wordCount">0</span> words</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-panel">
+          <button id="convertBtn" class="convert-btn">
+            <i class="fas fa-magic"></i>
+            <span>Convert to Markdown</span>
+            <div class="loader"></div>
+          </button>
+          <button id="clearBtn" class="clear-btn">
+            <i class="fas fa-trash"></i>
+            Clear All
+          </button>
+        </div>
+
+        <div id="status" class="status"></div>
+      </div>
+    </div>
+
+    <div class="floating-help">
+      <button id="helpBtn">
+        <i class="fas fa-question"></i>
+      </button>
+      <div class="help-tooltip">
+        <h4>Quick Help</h4>
+        <ul>
+          <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Convert</li>
+          <li><kbd>Ctrl</kbd> + <kbd>V</kbd> - Paste</li>
+          <li><kbd>Ctrl</kbd> + <kbd>K</kbd> - Clear</li>
+        </ul>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', path='/script.js') }}"></script>
+  </body>
+</html>

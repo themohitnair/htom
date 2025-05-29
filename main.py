@@ -3,6 +3,9 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
 from modules.convert import html_to_markdown
@@ -28,6 +31,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+
+# Add this new endpoint (don't change existing ones)
+@app.get("/app", response_class=HTMLResponse)
+async def converter_app(request: Request):
+    """Serve the HTML converter interface"""
+    logger.info("Converter app interface accessed")
+    return templates.TemplateResponse("converter.html", {"request": request})
 
 
 @app.middleware("http")

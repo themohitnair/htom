@@ -82,7 +82,7 @@ pipeline {
                             -Dsonar.language=py \
                             -Dsonar.sourceEncoding=UTF-8 \
                             -Dsonar.python.coverage.reportPaths=coverage.xml \
-                            -Dsonar.exclusions=**/venv/**,**/__pycache__/**,**/node_modules/**,**/.git/**,**/tests/**,**/*.pyc,**/migrations/**
+                            -Dsonar.exclusions=**/venv/**,**/__pycache__/**,**/node_modules/**,**/.git/**,**/tests/**,**/*.pyc,**/migrations/**,**/static/**,**/templates/**,**/*.html,**/*.css,**/*.js
                         """
                     }
                 }
