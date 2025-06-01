@@ -153,8 +153,7 @@ pipeline {
                             --memory=512Mi \
                             --cpu=1000m \
                             --max-instances=10 \
-                            --timeout=300
-                            --ingress=all \
+                            --timeout=300 \
                             --set-env-vars="FORCE_HTTPS=true"
 
                         # Get the service URL
