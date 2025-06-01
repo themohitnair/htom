@@ -26,7 +26,6 @@ pipeline {
                     python3 -m venv venv
                     source venv/bin/activate
                     python3 -m pip install --upgrade pip
-                    # Install build tools for pyproject.toml
                     pip install build wheel setuptools
                 '''
             }
@@ -36,9 +35,7 @@ pipeline {
             steps {
                 sh '''
                     source venv/bin/activate
-                    # Install project in editable mode with all dependencies
                     pip install -e ".[dev]" || pip install -e .
-                    # Install testing dependencies if not in pyproject.toml
                     pip install pytest pytest-cov
                 '''
             }
@@ -119,14 +116,11 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: GCLOUD_CREDENTIALS, variable: 'GCLOUD_SERVICE_KEY')]) {
                     sh '''
-                        # Authenticate with Google Cloud
                         gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
                         gcloud config set project ${GCP_PROJECT_ID}
 
-                        # Configure Docker for Artifact Registry
                         gcloud auth configure-docker us-central1-docker.pkg.dev
 
-                        # Push both images
                         docker push ${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER}
                         docker push ${ARTIFACT_REGISTRY_REPO}:latest
 
@@ -140,11 +134,9 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: GCLOUD_CREDENTIALS, variable: 'GCLOUD_SERVICE_KEY')]) {
                     sh '''
-                        # Authenticate with Google Cloud
                         gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
                         gcloud config set project ${GCP_PROJECT_ID}
 
-                        # Deploy to Cloud Run using Artifact Registry image
                         gcloud run deploy ${CLOUD_RUN_SERVICE} \
                             --image=${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER} \
                             --platform=managed \
@@ -157,7 +149,6 @@ pipeline {
                             --timeout=300 \
                             --set-env-vars="FORCE_HTTPS=true"
 
-                        # Get the service URL
                         SERVICE_URL=$(gcloud run services describe ${CLOUD_RUN_SERVICE} --region=${GCP_REGION} --format="value(status.url)")
                         echo "Application deployed successfully!"
                         echo "Service URL: ${SERVICE_URL}"
@@ -169,7 +160,6 @@ pipeline {
         stage('Cleanup Local Images') {
             steps {
                 sh '''
-                    # Clean up local Docker images to save space
                     docker rmi ${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER} || true
                     docker rmi ${ARTIFACT_REGISTRY_REPO}:latest || true
                     echo "Local Docker images cleaned up"
@@ -182,7 +172,6 @@ pipeline {
         always {
             echo 'Pipeline completed'
 
-            // Publish OWASP report
             publishHTML([
                 allowMissing: false,
                 alwaysLinkToLastBuild: true,
@@ -192,16 +181,14 @@ pipeline {
                 reportName: 'OWASP Dependency Check Report'
             ])
 
-            // Clean up virtual environment
             sh 'rm -rf venv || true'
         }
 
         success {
             echo 'Pipeline succeeded! Application deployed to Cloud Run.'
             script {
-                // Display deployment information
                 echo "✅ Deployment successful!"
-                echo "🐳 Docker Image: ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+                echo "🐳 Docker Image: ${ARTIFACT_REGISTRY_REPO}:${env.BUILD_NUMBER}"
                 echo "☁️ Cloud Run Service: ${CLOUD_RUN_SERVICE}"
                 echo "🌍 Region: ${GCP_REGION}"
                 echo "🔗 Expected URL: https://${CLOUD_RUN_SERVICE}-${GCP_REGION}-${GCP_PROJECT_ID}.a.run.app"
