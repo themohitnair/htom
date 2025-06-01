@@ -5,6 +5,7 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
+        DOCKER_REPOSITORY = "themohitnair/htom-app"
         GCP_PROJECT_ID = "htom-461604"
         GCP_REGION = "us-central1"
         CLOUD_RUN_SERVICE = "htom"
