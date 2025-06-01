@@ -169,8 +169,8 @@ pipeline {
             steps {
                 sh '''
                     # Clean up local Docker images to save space
-                    docker rmi ${GCR_REPOSITORY}:${BUILD_NUMBER} || true
-                    docker rmi ${GCR_REPOSITORY}:latest || true
+                    docker rmi ${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER} || true
+                    docker rmi ${ARTIFACT_REGISTRY_REPO}:latest || true
                     echo "Local Docker images cleaned up"
                 '''
             }
