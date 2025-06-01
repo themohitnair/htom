@@ -5,9 +5,6 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
-        DOCKER_REGISTRY = "docker.io"
-        DOCKER_REPOSITORY = "themohitnair/htom-app"
-        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
         GCP_PROJECT_ID = "htom-461604"
         GCP_REGION = "us-central1"
         CLOUD_RUN_SERVICE = "htom"
@@ -115,25 +112,6 @@ pipeline {
                     echo "Docker image tagged as: ${DOCKER_REPOSITORY}:latest"
 
                     env.DOCKER_IMAGE_BUILT = "${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
-                }
-            }
-        }
-
-        stage('Push to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | docker login docker.io -u "$DOCKER_USER" --password-stdin
-
-                        # Push both images
-                        docker push ${DOCKER_REPOSITORY}:${BUILD_NUMBER}
-                        docker push ${DOCKER_REPOSITORY}:latest
-
-                        # Logout for security
-                        docker logout docker.io
-
-                        echo "Docker images pushed successfully"
-                    '''
                 }
             }
         }
