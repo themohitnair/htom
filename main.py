@@ -47,12 +47,13 @@ async def add_security_and_logging(request: Request, call_next):
 
     response = await call_next(request)
 
+    # Updated CSP to allow both HTTP and HTTPS for debugging
     response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
-        "script-src 'self' 'unsafe-inline'; "
-        "font-src 'self' https://cdnjs.cloudflare.com; "
-        "img-src 'self' data: https:;"
+        "default-src 'self' http: https:; "
+        "style-src 'self' 'unsafe-inline' http: https: https://cdnjs.cloudflare.com; "
+        "script-src 'self' 'unsafe-inline' http: https:; "
+        "font-src 'self' http: https: https://cdnjs.cloudflare.com; "
+        "img-src 'self' data: http: https:;"
     )
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
