@@ -37,11 +37,7 @@ templates = Jinja2Templates(directory="templates")
 
 @app.middleware("http")
 async def fix_https_urls(request: Request, call_next):
-    """Fix HTTPS URL generation behind Cloud Run proxy"""
-
-    # Cloud Run sets x-forwarded-proto header
     if request.headers.get("x-forwarded-proto") == "https":
-        # Force the request scheme to HTTPS for url_for() generation
         request.scope["scheme"] = "https"
         request.scope["server"] = (request.headers.get("host", "localhost"), 443)
 
@@ -51,14 +47,12 @@ async def fix_https_urls(request: Request, call_next):
 
 @app.get("/app", response_class=HTMLResponse)
 async def converter_app(request: Request):
-    """Serve the HTML converter interface"""
     logger.info("Converter app interface accessed")
     return templates.TemplateResponse("converter.html", {"request": request})
 
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Log HTTP exceptions"""
     logger.error(
         f"HTTP exception on {request.url.path}: {exc.status_code} - {exc.detail}"
     )
