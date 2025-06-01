@@ -62,6 +62,7 @@ pipeline {
                   --prettyPrint
                   --enableRetired
                   --enableExperimental
+                  --noupdate
                   --data /var/lib/jenkins/dependency-check-data
               ''',
               odcInstallation: 'OWASP-DepCheck',
