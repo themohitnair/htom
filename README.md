@@ -15,3 +15,9 @@ A simple API to convert HTML to Markdown.
 The Application is hosted [here](https://htom-1056258232007.us-central1.run.app/app)
 
 ![](./assets/app.png)
+
+## Pipeline
+
+Here is a representation of the pipeline employed in htom:
+
+![Pipeline](./assets/jenkinspipeline.png)
