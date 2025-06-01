@@ -154,6 +154,8 @@ pipeline {
                             --cpu=1000m \
                             --max-instances=10 \
                             --timeout=300
+                            --ingress=all \
+                            --set-env-vars="FORCE_HTTPS=true"
 
                         # Get the service URL
                         SERVICE_URL=$(gcloud run services describe ${CLOUD_RUN_SERVICE} --region=${GCP_REGION} --format="value(status.url)")

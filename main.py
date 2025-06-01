@@ -3,6 +3,7 @@ import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -32,21 +33,15 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_middleware(HTTPSRedirectMiddleware)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
-# Add this new endpoint (don't change existing ones)
-@app.get("/app", response_class=HTMLResponse)
-async def converter_app(request: Request):
-    """Serve the HTML converter interface"""
-    logger.info("Converter app interface accessed")
-    return templates.TemplateResponse("converter.html", {"request": request})
-
-
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log all incoming requests and their processing time"""
+async def add_security_and_logging(request: Request, call_next):
+    """Add security headers and log requests"""
     start_time = time.time()
 
     logger.info(
@@ -54,6 +49,16 @@ async def log_requests(request: Request, call_next):
     )
 
     response = await call_next(request)
+
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
+        "script-src 'self' 'unsafe-inline'; "
+        "font-src 'self' https://cdnjs.cloudflare.com; "
+        "img-src 'self' data: https:;"
+    )
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
 
     process_time = time.time() - start_time
 
@@ -63,6 +68,13 @@ async def log_requests(request: Request, call_next):
     )
 
     return response
+
+
+@app.get("/app", response_class=HTMLResponse)
+async def converter_app(request: Request):
+    """Serve the HTML converter interface"""
+    logger.info("Converter app interface accessed")
+    return templates.TemplateResponse("converter.html", {"request": request})
 
 
 @app.exception_handler(HTTPException)
@@ -87,10 +99,8 @@ async def convert(query: HTMLRequest):
 
     try:
         markdown = html_to_markdown(query.html)
-
         markdown_preview = markdown[:50] + "..." if len(markdown) > 50 else markdown
         logger.info(f"Conversion successful. Output: {markdown_preview}")
-
         return MarkdownResponse(markdown=markdown, success="ok")
 
     except Exception as e:
