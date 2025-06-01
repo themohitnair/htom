@@ -5,7 +5,7 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
-        GCR_REPOSITORY = "gcr.io/htom-461604/htom-app"
+        ARTIFACT_REGISTRY_REPO = "us-central1-docker.pkg.dev/htom-461604/htom-app-repo/htom-app"
         GCP_PROJECT_ID = "htom-461604"
         GCP_REGION = "us-central1"
         CLOUD_RUN_SERVICE = "htom"
@@ -105,16 +105,16 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def dockerImage = docker.build("${GCR_REPOSITORY}:${env.BUILD_NUMBER}")
+                    def dockerImage = docker.build("${ARTIFACT_REGISTRY_REPO}:${env.BUILD_NUMBER}")
                     dockerImage.tag("latest")
 
-                    echo "Docker image built: ${GCR_REPOSITORY}:${env.BUILD_NUMBER}"
-                    echo "Docker image tagged as: ${GCR_REPOSITORY}:latest"
+                    echo "Docker image built: ${ARTIFACT_REGISTRY_REPO}:${env.BUILD_NUMBER}"
+                    echo "Docker image tagged as: ${ARTIFACT_REGISTRY_REPO}:latest"
                 }
             }
         }
 
-        stage('Push to Google Container Registry') {
+        stage('Push to Artifact Registry') {
             steps {
                 withCredentials([file(credentialsId: GCLOUD_CREDENTIALS, variable: 'GCLOUD_SERVICE_KEY')]) {
                     sh '''
@@ -122,14 +122,14 @@ pipeline {
                         gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
                         gcloud config set project ${GCP_PROJECT_ID}
 
-                        # Configure Docker to use gcloud as credential helper
-                        gcloud auth configure-docker
+                        # Configure Docker for Artifact Registry
+                        gcloud auth configure-docker us-central1-docker.pkg.dev
 
-                        # Push both images to GCR
-                        docker push ${GCR_REPOSITORY}:${BUILD_NUMBER}
-                        docker push ${GCR_REPOSITORY}:latest
+                        # Push both images
+                        docker push ${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER}
+                        docker push ${ARTIFACT_REGISTRY_REPO}:latest
 
-                        echo "Docker images pushed to Google Container Registry"
+                        echo "Docker images pushed to Artifact Registry"
                     '''
                 }
             }
@@ -143,9 +143,9 @@ pipeline {
                         gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
                         gcloud config set project ${GCP_PROJECT_ID}
 
-                        # Deploy to Cloud Run using GCR image
+                        # Deploy to Cloud Run using Artifact Registry image
                         gcloud run deploy ${CLOUD_RUN_SERVICE} \
-                            --image=${GCR_REPOSITORY}:${BUILD_NUMBER} \
+                            --image=${ARTIFACT_REGISTRY_REPO}:${BUILD_NUMBER} \
                             --platform=managed \
                             --region=${GCP_REGION} \
                             --allow-unauthenticated \
