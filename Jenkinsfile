@@ -5,6 +5,13 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
+        DOCKER_REGISTRY = "docker.io"
+        DOCKER_REPOSITORY = "themohitnair/htom-app"
+        DOCKERHUB_CREDENTIALS = 'dockerhub-credentials'
+        GCP_PROJECT_ID = "htom-461604"
+        GCP_REGION = "us-central1"
+        CLOUD_RUN_SERVICE = "htom"
+        GCLOUD_CREDENTIALS = 'gcloud-service-account'
     }
 
     stages {
@@ -96,6 +103,70 @@ pipeline {
                 }
             }
         }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image with build number as tag
+                    dockerImage = docker.build("${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}")
+                    // Also tag as latest
+                    dockerImage.tag("${DOCKER_REPOSITORY}:latest")
+                    echo "Docker image built: ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+                }
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                script {
+                    docker.withRegistry("https://${DOCKER_REGISTRY}", DOCKERHUB_CREDENTIALS) {
+                        dockerImage.push("${env.BUILD_NUMBER}")
+                        dockerImage.push("latest")
+                        echo "Docker image pushed to DockerHub"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Google Cloud Run') {
+            steps {
+                withCredentials([file(credentialsId: GCLOUD_CREDENTIALS, variable: 'GCLOUD_SERVICE_KEY')]) {
+                    sh '''
+                        # Authenticate with Google Cloud
+                        gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
+                        gcloud config set project ${GCP_PROJECT_ID}
+
+                        # Deploy to Cloud Run
+                        gcloud run deploy ${CLOUD_RUN_SERVICE} \
+                            --image=${DOCKER_REPOSITORY}:${BUILD_NUMBER} \
+                            --platform=managed \
+                            --region=${GCP_REGION} \
+                            --allow-unauthenticated \
+                            --port=8080 \
+                            --memory=512Mi \
+                            --cpu=1000m \
+                            --max-instances=10 \
+                            --timeout=300
+
+                        # Get the service URL
+                        SERVICE_URL=$(gcloud run services describe ${CLOUD_RUN_SERVICE} --region=${GCP_REGION} --format="value(status.url)")
+                        echo "Application deployed successfully!"
+                        echo "Service URL: ${SERVICE_URL}"
+                    '''
+                }
+            }
+        }
+
+        stage('Cleanup Local Images') {
+            steps {
+                sh '''
+                    # Clean up local Docker images to save space
+                    docker rmi ${DOCKER_REPOSITORY}:${BUILD_NUMBER} || true
+                    docker rmi ${DOCKER_REPOSITORY}:latest || true
+                    echo "Local Docker images cleaned up"
+                '''
+            }
+        }
     }
 
     post {
@@ -117,11 +188,20 @@ pipeline {
         }
 
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Pipeline succeeded! Application deployed to Cloud Run.'
+            script {
+                // Display deployment information
+                echo "✅ Deployment successful!"
+                echo "🐳 Docker Image: ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+                echo "☁️ Cloud Run Service: ${CLOUD_RUN_SERVICE}"
+                echo "🌍 Region: ${GCP_REGION}"
+                echo "🔗 Expected URL: https://${CLOUD_RUN_SERVICE}-${GCP_REGION}-${GCP_PROJECT_ID}.a.run.app"
+            }
         }
 
         failure {
             echo 'Pipeline failed!'
+            echo 'Check the logs above for error details.'
         }
     }
 }
