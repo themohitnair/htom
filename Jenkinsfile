@@ -5,7 +5,7 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
-        DOCKER_REPOSITORY = "themohitnair/htom-app"
+        GCR_REPOSITORY = "gcr.io/htom-461604/htom-app"
         GCP_PROJECT_ID = "htom-461604"
         GCP_REGION = "us-central1"
         CLOUD_RUN_SERVICE = "htom"
@@ -105,14 +105,32 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def dockerImage = docker.build("${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}")
-
+                    def dockerImage = docker.build("${GCR_REPOSITORY}:${env.BUILD_NUMBER}")
                     dockerImage.tag("latest")
 
-                    echo "Docker image built: ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
-                    echo "Docker image tagged as: ${DOCKER_REPOSITORY}:latest"
+                    echo "Docker image built: ${GCR_REPOSITORY}:${env.BUILD_NUMBER}"
+                    echo "Docker image tagged as: ${GCR_REPOSITORY}:latest"
+                }
+            }
+        }
 
-                    env.DOCKER_IMAGE_BUILT = "${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+        stage('Push to Google Container Registry') {
+            steps {
+                withCredentials([file(credentialsId: GCLOUD_CREDENTIALS, variable: 'GCLOUD_SERVICE_KEY')]) {
+                    sh '''
+                        # Authenticate with Google Cloud
+                        gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
+                        gcloud config set project ${GCP_PROJECT_ID}
+
+                        # Configure Docker to use gcloud as credential helper
+                        gcloud auth configure-docker
+
+                        # Push both images to GCR
+                        docker push ${GCR_REPOSITORY}:${BUILD_NUMBER}
+                        docker push ${GCR_REPOSITORY}:latest
+
+                        echo "Docker images pushed to Google Container Registry"
+                    '''
                 }
             }
         }
@@ -125,9 +143,9 @@ pipeline {
                         gcloud auth activate-service-account --key-file=${GCLOUD_SERVICE_KEY}
                         gcloud config set project ${GCP_PROJECT_ID}
 
-                        # Deploy to Cloud Run
+                        # Deploy to Cloud Run using GCR image
                         gcloud run deploy ${CLOUD_RUN_SERVICE} \
-                            --image=${DOCKER_REPOSITORY}:${BUILD_NUMBER} \
+                            --image=${GCR_REPOSITORY}:${BUILD_NUMBER} \
                             --platform=managed \
                             --region=${GCP_REGION} \
                             --allow-unauthenticated \
@@ -150,8 +168,8 @@ pipeline {
             steps {
                 sh '''
                     # Clean up local Docker images to save space
-                    docker rmi ${DOCKER_REPOSITORY}:${BUILD_NUMBER} || true
-                    docker rmi ${DOCKER_REPOSITORY}:latest || true
+                    docker rmi ${GCR_REPOSITORY}:${BUILD_NUMBER} || true
+                    docker rmi ${GCR_REPOSITORY}:latest || true
                     echo "Local Docker images cleaned up"
                 '''
             }
