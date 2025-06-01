@@ -121,12 +121,19 @@ pipeline {
 
         stage('Push to DockerHub') {
             steps {
-                script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", DOCKERHUB_CREDENTIALS) {
-                        dockerImage.push("${env.BUILD_NUMBER}")
-                        dockerImage.push("latest")
-                        echo "Docker image pushed to DockerHub"
-                    }
+                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login docker.io -u "$DOCKER_USER" --password-stdin
+
+                        # Push both images
+                        docker push ${DOCKER_REPOSITORY}:${BUILD_NUMBER}
+                        docker push ${DOCKER_REPOSITORY}:latest
+
+                        # Logout for security
+                        docker logout docker.io
+
+                        echo "Docker images pushed successfully"
+                    '''
                 }
             }
         }
