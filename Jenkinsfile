@@ -107,11 +107,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build Docker image with build number as tag
-                    dockerImage = docker.build("${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}")
-                    // Also tag as latest
-                    dockerImage.tag("${DOCKER_REPOSITORY}:latest")
+                    def dockerImage = docker.build("${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}")
+
+                    dockerImage.tag("latest")
+
                     echo "Docker image built: ${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
+                    echo "Docker image tagged as: ${DOCKER_REPOSITORY}:latest"
+
+                    env.DOCKER_IMAGE_BUILT = "${DOCKER_REPOSITORY}:${env.BUILD_NUMBER}"
                 }
             }
         }
