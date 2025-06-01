@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy all source files before installing the package
 COPY pyproject.toml README.md ./
 COPY main.py ./
 COPY modules/ ./modules/
