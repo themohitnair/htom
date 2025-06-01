@@ -1,5 +1,4 @@
 import logging
-import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -37,34 +36,16 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.middleware("http")
-async def add_security_and_logging(request: Request, call_next):
-    """Add security headers and log requests"""
-    start_time = time.time()
+async def fix_https_urls(request: Request, call_next):
+    """Fix HTTPS URL generation behind Cloud Run proxy"""
 
-    logger.info(
-        f"Incoming request: {request.method} {request.url.path} from {request.client.host}"
-    )
+    # Cloud Run sets x-forwarded-proto header
+    if request.headers.get("x-forwarded-proto") == "https":
+        # Force the request scheme to HTTPS for url_for() generation
+        request.scope["scheme"] = "https"
+        request.scope["server"] = (request.headers.get("host", "localhost"), 443)
 
     response = await call_next(request)
-
-    # Updated CSP to allow both HTTP and HTTPS for debugging
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self' http: https:; "
-        "style-src 'self' 'unsafe-inline' http: https: https://cdnjs.cloudflare.com; "
-        "script-src 'self' 'unsafe-inline' http: https:; "
-        "font-src 'self' http: https: https://cdnjs.cloudflare.com; "
-        "img-src 'self' data: http: https:;"
-    )
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-
-    process_time = time.time() - start_time
-
-    logger.info(
-        f"Request completed: {request.method} {request.url.path} - "
-        f"Status: {response.status_code} - Time: {process_time:.3f}s"
-    )
-
     return response
 
 
