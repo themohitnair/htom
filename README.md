@@ -1,6 +1,6 @@
 # htom [DevOps Lab]
 
-A simple API to convert HTML to Markdown.
+A simple app to convert HTML to Markdown. Also contains functionality to do the reverse, alongside providing text statistics.
 
 ## Tools used
 
