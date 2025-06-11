@@ -15,7 +15,7 @@ from modules.models import (
     TextAnalysisRequest,
     TextStatsResponse,
     MarkdownRequest,
-    HTMLResponse,
+    HTMLCResponse,
 )
 
 logging.basicConfig(
@@ -133,11 +133,11 @@ async def convert_markdown_to_html(query: MarkdownRequest):
         html = markdown_to_html(query.markdown)
         html_preview = html[:50] + "..." if len(html) > 50 else html
         logger.info(f"Markdown to HTML conversion successful. Output: {html_preview}")
-        return HTMLResponse(html=html, success="ok")
+        return HTMLCResponse(html=html, success="ok")
 
     except Exception as e:
         logger.error(
             f"Markdown to HTML conversion failed for input: {md_preview}. Error: {str(e)}",
             exc_info=True,
         )
-        return HTMLResponse(success="error")
+        return HTMLCResponse(success="error")

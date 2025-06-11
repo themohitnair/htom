@@ -32,6 +32,6 @@ class MarkdownRequest(BaseModel):
     markdown: Optional[str] = None
 
 
-class HTMLResponse(BaseModel):
+class HTMLCResponse(BaseModel):
     html: Optional[str] = None
     success: str
