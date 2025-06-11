@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About - HTML/Markdown Tools</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="{{ url_for('static', path='/about.js') }}"></script>
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <a href="/app" class="nav-link"><i class="fas fa-exchange-alt"></i> Converter</a>
+      <a href="/stats" class="nav-link"><i class="fas fa-chart-bar"></i> Text Stats</a>
+      <a href="/about" class="nav-link active"><i class="fas fa-info-circle"></i> About</a>
+    </nav>
+
+    <div class="theme-toggle">
+      <button id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+
+    <div class="container">
+      <header class="header">
+        <h1><i class="fas fa-info-circle"></i> About This App</h1>
+        <p class="subtitle">HTML/Markdown conversion and text analysis tools</p>
+      </header>
+
+      <div class="about-content">
+        <div class="feature-grid">
+          <div class="feature-card">
+            <i class="fas fa-exchange-alt"></i>
+            <h3>HTML ↔ Markdown</h3>
+            <p>Convert between HTML and Markdown formats seamlessly with support for tables, links, and formatting.</p>
+          </div>
+          
+          <div class="feature-card">
+            <i class="fas fa-chart-line"></i>
+            <h3>Text Analysis</h3>
+            <p>Analyze text readability, complexity, and get detailed statistics about your content.</p>
+          </div>
+          
+          <div class="feature-card">
+            <i class="fas fa-download"></i>
+            <h3>Export Options</h3>
+            <p>Download converted files and copy results to clipboard for easy sharing.</p>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h2>Technology Stack</h2>
+          <ul class="tech-list">
+            <li><strong>FastAPI</strong> - Modern Python web framework</li>
+            <li><strong>html2text</strong> - HTML to Markdown conversion</li>
+            <li><strong>markdown</strong> - Markdown to HTML conversion</li>
+            <li><strong>textstat</strong> - Text readability analysis</li>
+          </ul>
+        </div>
+
+        <div class="source-section">
+          <h2>Source Code</h2>
+          <p>This project is open source and available on GitHub:</p>
+          <a href="https://github.com/themohitnair/htom" class="github-link" target="_blank">
+            <i class="fab fa-github"></i>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

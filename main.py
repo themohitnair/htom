@@ -7,8 +7,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException
 
-from modules.convert import html_to_markdown
-from modules.models import HealthCheck, HTMLRequest, MarkdownResponse
+from modules.convert import html_to_markdown, markdown_to_html, analyze_text_statistics
+from modules.models import (
+    HealthCheck,
+    HTMLRequest,
+    MarkdownResponse,
+    TextAnalysisRequest,
+    TextStatsResponse,
+    MarkdownRequest,
+    HTMLResponse,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -82,3 +90,54 @@ async def convert(query: HTMLRequest):
             exc_info=True,
         )
         return MarkdownResponse(success="error")
+
+
+@app.get("/stats", response_class=HTMLResponse)
+async def text_analyzer(request: Request):
+    logger.info("Text analyzer page accessed")
+    return templates.TemplateResponse("stats.html", {"request": request})
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about_page(request: Request):
+    logger.info("About page accessed")
+    return templates.TemplateResponse("about.html", {"request": request})
+
+
+@app.post("/analyze")
+async def analyze_text(query: TextAnalysisRequest):
+    text_preview = query.text[:50] + "..." if len(query.text) > 50 else query.text
+    logger.info(f"Starting text analysis for input: {text_preview}")
+
+    try:
+        stats = analyze_text_statistics(query.text)
+        logger.info("Text analysis successful")
+        return TextStatsResponse(stats=stats, success="ok")
+
+    except Exception as e:
+        logger.error(
+            f"Text analysis failed for input: {text_preview}. Error: {str(e)}",
+            exc_info=True,
+        )
+        return TextStatsResponse(success="error")
+
+
+@app.post("/md-to-html")
+async def convert_markdown_to_html(query: MarkdownRequest):
+    md_preview = (
+        query.markdown[:50] + "..." if len(query.markdown) > 50 else query.markdown
+    )
+    logger.info(f"Starting Markdown to HTML conversion for input: {md_preview}")
+
+    try:
+        html = markdown_to_html(query.markdown)
+        html_preview = html[:50] + "..." if len(html) > 50 else html
+        logger.info(f"Markdown to HTML conversion successful. Output: {html_preview}")
+        return HTMLResponse(html=html, success="ok")
+
+    except Exception as e:
+        logger.error(
+            f"Markdown to HTML conversion failed for input: {md_preview}. Error: {str(e)}",
+            exc_info=True,
+        )
+        return HTMLResponse(success="error")

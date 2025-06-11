@@ -15,3 +15,23 @@ class MarkdownResponse(BaseModel):
 
 class HealthCheck(BaseModel):
     status: str
+
+
+class TextAnalysisRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: Optional[str] = None
+
+
+class TextStatsResponse(BaseModel):
+    stats: Optional[dict] = None
+    success: str
+
+
+class MarkdownRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    markdown: Optional[str] = None
+
+
+class HTMLResponse(BaseModel):
+    html: Optional[str] = None
+    success: str

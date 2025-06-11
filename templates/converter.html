@@ -3,14 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HTML to Markdown Converter</title>
+    <title>HTML ↔ Markdown Converter</title>
     <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   </head>
   <body>
+    <nav class="nav-bar">
+      <a href="/app" class="nav-link active"><i class="fas fa-exchange-alt"></i> Converter</a>
+      <a href="/stats" class="nav-link"><i class="fas fa-chart-bar"></i> Text Stats</a>
+      <a href="/about" class="nav-link"><i class="fas fa-info-circle"></i> About</a>
+    </nav>
     <div class="theme-toggle">
       <button id="themeToggle">
         <i class="fas fa-moon"></i>
@@ -19,30 +21,32 @@
 
     <div class="container">
       <header class="header">
-        <h1><i class="fas fa-code"></i> HTML to Markdown Converter</h1>
+        <h1><i class="fas fa-code"></i> <span id="pageTitle">HTML to Markdown Converter</span></h1>
         <p class="subtitle">
-          Transform your HTML into clean, readable Markdown instantly
+          <span id="pageSubtitle">Transform your HTML into clean, readable Markdown instantly</span>
         </p>
+        <div class="mode-toggle">
+          <button id="modeToggle" class="mode-toggle-btn">
+            <i class="fas fa-exchange-alt"></i>
+            Switch to Markdown → HTML
+          </button>
+        </div>
       </header>
 
       <div class="converter-wrapper">
         <div class="converter-section">
           <div class="input-panel">
             <div class="panel-header">
-              <h3><i class="fab fa-html5"></i> HTML Input</h3>
+              <h3><i id="inputIcon" class="fab fa-html5"></i> <span id="inputLabel">HTML Input</span></h3>
               <div class="panel-actions">
-                <button
-                  id="pasteBtn"
-                  class="action-btn"
-                  title="Paste from clipboard"
-                >
+                <button id="pasteBtn" class="action-btn" title="Paste from clipboard">
                   <i class="fas fa-paste"></i>
                 </button>
               </div>
             </div>
             <div class="input-container">
               <textarea
-                id="htmlInput"
+                id="inputText"
                 placeholder="Enter HTML here..."
                 rows="15"
               ></textarea>
@@ -54,27 +58,19 @@
 
           <div class="output-panel">
             <div class="panel-header">
-              <h3><i class="fab fa-markdown"></i> Markdown Output</h3>
+              <h3><i id="outputIcon" class="fab fa-markdown"></i> <span id="outputLabel">Markdown Output</span></h3>
               <div class="panel-actions">
-                <button
-                  id="copyBtn"
-                  class="action-btn"
-                  title="Copy to clipboard"
-                >
+                <button id="copyBtn" class="action-btn" title="Copy to clipboard">
                   <i class="fas fa-copy"></i>
                 </button>
-                <button
-                  id="downloadBtn"
-                  class="action-btn"
-                  title="Download as .md file"
-                >
+                <button id="downloadBtn" class="action-btn" title="Download file">
                   <i class="fas fa-download"></i>
                 </button>
               </div>
             </div>
             <div class="output-container">
               <textarea
-                id="markdownOutput"
+                id="outputText"
                 readonly
                 placeholder="Your converted Markdown will appear here..."
                 rows="15"
@@ -87,7 +83,7 @@
         <div class="controls-panel">
           <button id="convertBtn" class="convert-btn">
             <i class="fas fa-magic"></i>
-            <span>Convert to Markdown</span>
+            <span id="convertBtnText">Convert to Markdown</span>
             <div class="loader"></div>
           </button>
           <button id="clearBtn" class="clear-btn">
@@ -110,6 +106,7 @@
           <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd> - Convert</li>
           <li><kbd>Ctrl</kbd> + <kbd>V</kbd> - Paste</li>
           <li><kbd>Ctrl</kbd> + <kbd>K</kbd> - Clear</li>
+          <li><kbd>Ctrl</kbd> + <kbd>M</kbd> - Toggle Mode</li>
         </ul>
       </div>
     </div>

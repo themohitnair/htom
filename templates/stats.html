@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Text Statistics Analyzer</title>
+    <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  </head>
+  <body>
+    <nav class="nav-bar">
+      <a href="/app" class="nav-link"><i class="fas fa-exchange-alt"></i> Converter</a>
+      <a href="/stats" class="nav-link active"><i class="fas fa-chart-bar"></i> Text Stats</a>
+      <a href="/about" class="nav-link"><i class="fas fa-info-circle"></i> About</a>
+    </nav>
+
+    <div class="theme-toggle">
+      <button id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+
+    <div class="container">
+      <header class="header">
+        <h1><i class="fas fa-chart-line"></i> Text Statistics Analyzer</h1>
+        <p class="subtitle">Analyze your text's readability, complexity, and statistics</p>
+      </header>
+
+      <div class="stats-wrapper">
+        <div class="input-section">
+          <div class="panel-header">
+            <h3><i class="fas fa-edit"></i> Text Input</h3>
+          </div>
+          <textarea id="textInput" placeholder="Enter your text here for analysis..." rows="12"></textarea>
+          <button id="analyzeBtn" class="convert-btn">
+            <i class="fas fa-analytics"></i>
+            <span>Analyze Text</span>
+          </button>
+        </div>
+
+        <div class="results-section">
+          <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+              <h4>Basic Counts</h4>
+              <div class="stat-item">
+                <span class="stat-label">Words:</span>
+                <span class="stat-value" id="wordCount">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Sentences:</span>
+                <span class="stat-value" id="sentenceCount">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Characters:</span>
+                <span class="stat-value" id="charCount">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Paragraphs:</span>
+                <span class="stat-value" id="paragraphCount">-</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <h4>Readability</h4>
+              <div class="stat-item">
+                <span class="stat-label">Reading Ease:</span>
+                <span class="stat-value" id="readingEase">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Grade Level:</span>
+                <span class="stat-value" id="gradeLevel">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Reading Time:</span>
+                <span class="stat-value" id="readingTime">-</span>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <h4>Complexity</h4>
+              <div class="stat-item">
+                <span class="stat-label">Difficult Words:</span>
+                <span class="stat-value" id="difficultWords">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Syllables:</span>
+                <span class="stat-value" id="syllableCount">-</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Avg Sentence Length:</span>
+                <span class="stat-value" id="avgSentenceLength">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <script src="{{ url_for('static', path='/stats.js') }}"></script>
+  </body>
+</html>

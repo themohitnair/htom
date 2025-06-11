@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
-    const htmlInput = document.getElementById('htmlInput');
-    const markdownOutput = document.getElementById('markdownOutput');
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
     const convertBtn = document.getElementById('convertBtn');
     const clearBtn = document.getElementById('clearBtn');
     const status = document.getElementById('status');
@@ -11,6 +11,53 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('downloadBtn');
     const charCount = document.getElementById('charCount');
     const wordCount = document.getElementById('wordCount');
+    const modeToggle = document.getElementById('modeToggle');
+
+    // UI Elements for dynamic content
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    const inputLabel = document.getElementById('inputLabel');
+    const outputLabel = document.getElementById('outputLabel');
+    const inputIcon = document.getElementById('inputIcon');
+    const outputIcon = document.getElementById('outputIcon');
+    const convertBtnText = document.getElementById('convertBtnText');
+
+    // Mode state
+    let isHtmlToMarkdown = true; // true = HTML→MD, false = MD→HTML
+
+    // Mode configurations
+    const modes = {
+        htmlToMd: {
+            title: 'HTML to Markdown Converter',
+            subtitle: 'Transform your HTML into clean, readable Markdown instantly',
+            inputLabel: 'HTML Input',
+            outputLabel: 'Markdown Output',
+            inputIcon: 'fab fa-html5',
+            outputIcon: 'fab fa-markdown',
+            inputPlaceholder: 'Enter HTML here...',
+            outputPlaceholder: 'Your converted Markdown will appear here...',
+            convertText: 'Convert to Markdown',
+            toggleText: 'Switch to Markdown → HTML',
+            endpoint: '/convert',
+            downloadExt: 'md',
+            downloadType: 'text/markdown'
+        },
+        mdToHtml: {
+            title: 'Markdown to HTML Converter',
+            subtitle: 'Transform your Markdown into clean HTML code instantly',
+            inputLabel: 'Markdown Input',
+            outputLabel: 'HTML Output',
+            inputIcon: 'fab fa-markdown',
+            outputIcon: 'fab fa-html5',
+            inputPlaceholder: 'Enter Markdown here...',
+            outputPlaceholder: 'Your converted HTML will appear here...',
+            convertText: 'Convert to HTML',
+            toggleText: 'Switch to HTML → Markdown',
+            endpoint: '/md-to-html',
+            downloadExt: 'html',
+            downloadType: 'text/html'
+        }
+    };
 
     // Theme Management
     function initTheme() {
@@ -33,50 +80,77 @@ document.addEventListener('DOMContentLoaded', function() {
         updateThemeIcon(newTheme);
     });
 
+    // Mode toggle functionality
+    function updateUI() {
+        const mode = isHtmlToMarkdown ? modes.htmlToMd : modes.mdToHtml;
+        
+        pageTitle.textContent = mode.title;
+        pageSubtitle.textContent = mode.subtitle;
+        inputLabel.textContent = mode.inputLabel;
+        outputLabel.textContent = mode.outputLabel;
+        inputIcon.className = mode.inputIcon;
+        outputIcon.className = mode.outputIcon;
+        inputText.placeholder = mode.inputPlaceholder;
+        outputText.placeholder = mode.outputPlaceholder;
+        convertBtnText.textContent = mode.convertText;
+        modeToggle.innerHTML = `<i class="fas fa-exchange-alt"></i> ${mode.toggleText}`;
+        
+        // Clear content when switching modes
+        inputText.value = '';
+        outputText.value = '';
+        updateCounts();
+        hideStatus();
+    }
+
+    modeToggle.addEventListener('click', function() {
+        isHtmlToMarkdown = !isHtmlToMarkdown;
+        updateUI();
+        inputText.focus();
+    });
+
     // Character and word counting
     function updateCounts() {
-        const htmlText = htmlInput.value;
-        const markdownText = markdownOutput.value;
+        const inputValue = inputText.value;
+        const outputValue = outputText.value;
 
-        charCount.textContent = htmlText.length.toLocaleString();
+        charCount.textContent = inputValue.length.toLocaleString();
 
-        const words = markdownText.trim() ? markdownText.trim().split(/\s+/).length : 0;
+        const words = outputValue.trim() ? outputValue.trim().split(/\s+/).length : 0;
         wordCount.textContent = words.toLocaleString();
     }
 
-    htmlInput.addEventListener('input', updateCounts);
+    inputText.addEventListener('input', updateCounts);
 
     // Conversion functionality
     convertBtn.addEventListener('click', async function() {
-        console.log('Convert button clicked'); // Debug log
+        const mode = isHtmlToMarkdown ? modes.htmlToMd : modes.mdToHtml;
+        const content = inputText.value.trim();
 
-        const htmlContent = htmlInput.value.trim();
-
-        if (!htmlContent) {
-            showStatus('Please enter some HTML content', 'error');
+        if (!content) {
+            showStatus(`Please enter some ${isHtmlToMarkdown ? 'HTML' : 'Markdown'} content`, 'error');
             return;
         }
 
         setLoadingState(true);
-        showStatus('Converting your HTML to Markdown...', 'loading');
+        showStatus(`Converting your ${isHtmlToMarkdown ? 'HTML to Markdown' : 'Markdown to HTML'}...`, 'loading');
 
         try {
-            const response = await fetch('/convert', {
+            const requestBody = isHtmlToMarkdown ? { html: content } : { markdown: content };
+            
+            const response = await fetch(mode.endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    html: htmlContent
-                })
+                body: JSON.stringify(requestBody)
             });
 
             const data = await response.json();
-            console.log('Response:', data); // Debug log
 
             if (response.ok && data.success === 'ok') {
-                markdownOutput.value = data.markdown;
-                showStatus('✨ Conversion successful! Your Markdown is ready.', 'success');
+                const result = isHtmlToMarkdown ? data.markdown : data.html;
+                outputText.value = result;
+                showStatus('✨ Conversion successful!', 'success');
                 updateCounts();
 
                 // Pulse animation for output
@@ -85,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.querySelector('.output-panel').classList.remove('pulse');
                 }, 300);
             } else {
-                showStatus('❌ Conversion failed. Please check your HTML syntax.', 'error');
+                showStatus(`❌ Conversion failed. Please check your ${isHtmlToMarkdown ? 'HTML' : 'Markdown'} syntax.`, 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -102,21 +176,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Clear functionality
     clearBtn.addEventListener('click', function() {
-        htmlInput.value = '';
-        markdownOutput.value = '';
+        inputText.value = '';
+        outputText.value = '';
         hideStatus();
         updateCounts();
-        htmlInput.focus();
+        inputText.focus();
     });
 
     // Paste from clipboard
     pasteBtn.addEventListener('click', async function() {
         try {
             const text = await navigator.clipboard.readText();
-            htmlInput.value = text;
+            inputText.value = text;
             updateCounts();
             showStatus('📋 Content pasted from clipboard', 'success');
-            htmlInput.focus();
+            inputText.focus();
         } catch (err) {
             showStatus('❌ Could not access clipboard', 'error');
         }
@@ -124,14 +198,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Copy to clipboard
     copyBtn.addEventListener('click', async function() {
-        if (!markdownOutput.value) {
-            showStatus('❌ No markdown to copy', 'error');
+        if (!outputText.value) {
+            showStatus(`❌ No ${isHtmlToMarkdown ? 'markdown' : 'HTML'} to copy`, 'error');
             return;
         }
 
         try {
-            await navigator.clipboard.writeText(markdownOutput.value);
-            showStatus('📋 Markdown copied to clipboard!', 'success');
+            await navigator.clipboard.writeText(outputText.value);
+            showStatus(`📋 ${isHtmlToMarkdown ? 'Markdown' : 'HTML'} copied to clipboard!`, 'success');
 
             // Temporarily change icon
             const icon = copyBtn.querySelector('i');
@@ -147,22 +221,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Download functionality
     downloadBtn.addEventListener('click', function() {
-        if (!markdownOutput.value) {
-            showStatus('❌ No markdown to download', 'error');
+        const mode = isHtmlToMarkdown ? modes.htmlToMd : modes.mdToHtml;
+        
+        if (!outputText.value) {
+            showStatus(`❌ No ${isHtmlToMarkdown ? 'markdown' : 'HTML'} to download`, 'error');
             return;
         }
 
-        const blob = new Blob([markdownOutput.value], { type: 'text/markdown' });
+        const blob = new Blob([outputText.value], { type: mode.downloadType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'converted.md';
+        a.download = `converted.${mode.downloadExt}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        showStatus('📁 Markdown file downloaded!', 'success');
+        showStatus(`📁 ${isHtmlToMarkdown ? 'Markdown' : 'HTML'} file downloaded!`, 'success');
     });
 
     // Status management
@@ -187,8 +263,8 @@ document.addEventListener('DOMContentLoaded', function() {
             convertBtn.click();
         }
 
-        // Ctrl+D to download (when markdown exists)
-        if (e.ctrlKey && e.key === 'd' && markdownOutput.value) {
+        // Ctrl+D to download (when output exists)
+        if (e.ctrlKey && e.key === 'd' && outputText.value) {
             e.preventDefault();
             downloadBtn.click();
         }
@@ -198,10 +274,17 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             clearBtn.click();
         }
+
+        // Ctrl+M to toggle mode
+        if (e.ctrlKey && e.key === 'm') {
+            e.preventDefault();
+            modeToggle.click();
+        }
     });
 
     // Initialize
     initTheme();
+    updateUI();
     updateCounts();
-    htmlInput.focus();
+    inputText.focus();
 });
