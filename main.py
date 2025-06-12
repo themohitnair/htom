@@ -67,12 +67,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     raise exc
 
 
-@app.get("/")
-async def health():
-    logger.info("Health check endpoint accessed")
-    return HealthCheck(status="ok")
-
-
 @app.post("/convert")
 async def convert(query: HTMLRequest):
     html_preview = query.html[:50] + "..." if len(query.html) > 50 else query.html
