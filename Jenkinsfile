@@ -5,8 +5,8 @@ pipeline {
         SONAR_TOKEN = credentials('jenkins-integration')
         NVD_API_KEY = credentials('nvd-api-key')
         PYTHON_VERSION = '3.10'
-        ARTIFACT_REGISTRY_REPO = "us-central1-docker.pkg.dev/htom-461604/htom-app-repo/htom-app"
-        GCP_PROJECT_ID = "htom-461604"
+        ARTIFACT_REGISTRY_REPO = "us-central1-docker.pkg.dev/htom-464515/htom-app-repo/htom-app"
+        GCP_PROJECT_ID = "htom-464515"
         GCP_REGION = "us-central1"
         CLOUD_RUN_SERVICE = "htom"
         GCLOUD_CREDENTIALS = 'gcloud-service-account'
