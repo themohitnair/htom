@@ -53,6 +53,13 @@ async def fix_https_urls(request: Request, call_next):
     return response
 
 
+@app.get("/", response_model=HealthCheck)
+async def health_check():
+    """Health check endpoint"""
+    logger.info("Health check endpoint accessed")
+    return HealthCheck(status="ok")
+
+
 @app.get("/app", response_class=HTMLResponse)
 async def converter_app(request: Request):
     logger.info("Converter app interface accessed")
